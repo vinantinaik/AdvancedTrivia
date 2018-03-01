@@ -89,15 +89,23 @@ var correctCount;
 var wrongCount;
 var quizTime;
 var intervalID;
+var currentQuestion;
+var quizCounter;
+var userAnswer;
+
+
 
 function initializeTrivia() {
     timeLeft = 0;
     unAnsweredCount = 0;
     correctCount = 0;
     wrongCount = 0;
-    quizTime = 120;
+    quizTime = 16;
+    quizCounter = 0;
     $("#result").hide();
-    // $("#submit").hide();
+    $("#currentQuestionResult").hide();
+    $("#quizContainer").empty();
+    $("#restart").hide();
 
 }
 
@@ -105,58 +113,136 @@ $(document).ready(function () {
     //initialize all trivia variables
     initializeTrivia();
 
-    //when player clicks on start run the timer for the first trivis question
-    $("#start").click(function () {
+    //when user clicks on start run the timer for the first trivia question
+    $('#start').click(function () {
         $(".lead").empty();
-        run();
-        getTrivia(questions[0]);
+        displayQuestion(quizCounter);
+    });
+
+    //when user clicks restart reinitialize trivia without reloading
+    $("#restart").click(function () {
+        initializeTrivia();
+        displayQuestion(quizCounter);
 
     });
 
+    // user clicked on possible answer
+    $(document).on("click", "#myList a.list-group-item", function () {
+
+        userAnswer = $(this).attr("data-val");
+        displayCurrentAnswer();
+
+    });
+
+    //displays next question
+    function displayQuestion() {
+
+        if (quizCounter >= questions.length) {
+            displayFinalTriviaScore();
+        }
+        else {
+            userAnswer = undefined;
+            clearInterval(intervalID);
+            quizTime = 16;
+
+            $("#currentQuestionResult").empty();
+            $("#quizContainer").empty();
+            getTrivia(questions[quizCounter]);
+            quizCounter++;
+            run();
+        }
+
+    }
+
+    function displayCurrentAnswer() {
+        clearInterval(intervalID);
+
+        if (userAnswer === undefined) {
+            unAnsweredCount++;
+            $("#currentQuestionResult").html("<h3>Out of time!!!</h3>");
+            $("#currentQuestionResult").append("<h3>correct answer is : "
+                + currentQuestion.answers[currentQuestion.correctAnswer] + "</h3>");
+        }
+        else if (userAnswer === currentQuestion.correctAnswer) {
+            correctCount++;
+            $("#currentQuestionResult").html("<h3>Correct!!!</h3>");
+        }
+        else {
+            wrongCount++;
+            $("#currentQuestionResult").html("<h3>Nope!!!</h3>"); $("#currentQuestionResult").html("<h3>Nope!!!</h3>");
+            $("#currentQuestionResult").append("<h3>correct answer is : "
+                + currentQuestion.answers[currentQuestion.correctAnswer] + "</h3>");
+        }
+
+        $("#currentQuestionResult").show();
+
+        // let use read the result before displaying next question
+        setTimeout(displayQuestion, 1000 * 3);
+
+
+
+
+    }
+
+
+
+    //display final score
+    function displayFinalTriviaScore() {
+        $("#currentQuestionResult").empty();
+        $("#quizContainer").empty();
+
+        $("#result").show();
+        $("#correct").html("Correct answers : " + correctCount);
+        $("#wrong").html("Wrong answers : " + wrongCount);
+        $("#unanswered").html("Unanswered : " + unAnsweredCount);
+        $("#restart").show();
+
+    }
+
+
     //helper methods
     function run() {
-        clearInterval(intervalID);
+
         intervalID = setInterval(decrement, 1000);
     }
 
     function getTrivia(questObj) {
         // we'll need a place to store the HTML output
+
+        currentQuestion = questObj;
         var trivia = [];
 
         var answers = [];
         for (letter in questObj.answers) {
             // ...add an HTML radio button
             answers.push(
-                `<div class="form-check">
-            <input class="form-check-input" type="radio" name="question${questObj.id}" value="${letter}">
-            <label class="form-check-label">${letter} : ${questObj.answers[letter]}
-            </label> </div>`
+                `<a href="#" class="list-group-item list-group-item-action list-group-item-light" data-val=${letter}> 
+                ${questObj.answers[letter]} </a>`
             );
 
         }
 
         // add this question and its answers to the quiz
         trivia.push(
-            `<div class="form-group"> ${questObj.id}.  ${questObj.question} </div>
-         <div class="form-group"> ${answers.join('')} </div><hr>`
+            `<div class="list-group"> ${questObj.id}.  ${questObj.question} </div><hr>
+            <div class="list-group" id="myList"> ${answers.join('')} </div>`
         );
-        // Add questions with possible answers 
+        // Add question with possible answers 
         $("#quizContainer").html(trivia.join(''));
     }
 
     function decrement() {
         //Decrement number by one;
         quizTime--;
-
-        //display the time left
-        //$("#time-left").html("<h2>" + "Time remaining : " + quizTime + "</h2>");
+      
         $("#time-left").html("Time remaining : " + quizTime);
 
-        //if time remaining is zero display final score
+        //if time remaining is zero display current answer and move on to the next question
         if (quizTime === 0) {
-            completeTrivia();
+            displayCurrentAnswer();
         }
     }
+
 
 
 

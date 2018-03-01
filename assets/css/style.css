@@ -1,0 +1,30 @@
+
+html {
+    position: relative;
+    min-height: 100%;
+  }
+  body {
+    /* Margin bottom by footer height */
+    background-image:url('../images/backgroundImage.png') ;
+    margin-bottom: 60px;
+  }
+main{
+   
+    font-family: Cambria, Cochin, Georgia, Times, 'Times New Roman', serif;
+    padding-top: 8rem;
+}  
+
+.jumbotron{
+    
+    
+    background-color: #d2691e;
+}
+
+#start{
+   
+    position: absolute;
+    top: 50%;
+}
+div,h1,h2, h3{
+    color: #ffffff;
+}
